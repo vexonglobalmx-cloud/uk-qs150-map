@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>英国 QS150 申请地图｜2028 入学规划</title>
+  <meta name="description" content="基于 QS 2027 建池的英国非伦敦大学申请地图，面向 2028 入学规划。" />
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIINfQ3YNCA4tUyjo6tGkfzqDG0rXF1vYdI=" crossorigin="">
+  <style>
+    :root{
+      --bg:#f6f7fb; --panel:#fff; --text:#172033; --muted:#667085;
+      --border:#e4e7ec; --accent:#1f5eff; --chip:#eef3ff;
+      --good:#157f3b; --warn:#a15c00; --danger:#b42318;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:24px 22px 16px;background:var(--panel);border-bottom:1px solid var(--border)}
+    h1{margin:0 0 8px;font-size:clamp(22px,4vw,34px)}
+    .sub{color:var(--muted);max-width:1000px;line-height:1.65}
+    .note{margin-top:10px;font-size:13px;color:var(--muted)}
+    .layout{display:grid;grid-template-columns:minmax(310px,430px) 1fr;min-height:calc(100vh - 132px)}
+    aside{padding:16px;border-right:1px solid var(--border);overflow:auto;max-height:calc(100vh - 132px)}
+    #map{min-height:720px;height:calc(100vh - 132px)}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    button{border:1px solid var(--border);background:#fff;border-radius:999px;padding:8px 12px;cursor:pointer;color:var(--text)}
+    button.active{background:var(--accent);color:white;border-color:var(--accent)}
+    .school{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer}
+    .school:hover{border-color:#b8c4e8}
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .name{font-weight:700}
+    .rank{font-weight:800;color:var(--accent);white-space:nowrap}
+    .meta,.program,.cost{margin-top:7px;font-size:14px;line-height:1.5}
+    .meta{color:var(--muted)}
+    .tag{display:inline-block;margin-top:8px;padding:4px 8px;border-radius:999px;background:var(--chip);font-size:12px}
+    .legend{font-size:13px;color:var(--muted);margin:8px 0 14px}
+    .popup h3{margin:0 0 6px}
+    .popup p{margin:6px 0;line-height:1.45}
+    .popup ul{padding-left:18px;margin:6px 0}
+    .popup .label{font-weight:700}
+    .popup a{color:var(--accent)}
+    footer{padding:14px 22px;font-size:12px;color:var(--muted);background:#fff;border-top:1px solid var(--border)}
+    @media(max-width:850px){
+      .layout{display:block}
+      aside{max-height:none;border-right:0}
+      #map{height:68vh;min-height:520px}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>英国 QS150 申请地图</h1>
+  <div class="sub">2028 入学规划 · 以 QS World University Rankings 2027 建池 · 当前先放入 8 所非伦敦核心院校。点击地图标记或左侧学校卡片查看申请定位、专业、费用和优劣势。</div>
+  <div class="note">提示：2028 学费、课程与中国院校 List 尚未发布。页面费用为基于目前可查信息的规划值，正式申请前应重新核对。</div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="toolbar" id="filters">
+      <button class="active" data-filter="全部">全部</button>
+      <button data-filter="冲刺">冲刺</button>
+      <button data-filter="主申">主申</button>
+      <button data-filter="稳妥">稳妥</button>
+    </div>
+    <div class="legend">申请人背景用于定位：江西理工大学 · 汉语国际教育 · 均分 80.7 · 跨境电商全职经历 · 目标 2028 入学。</div>
+    <div id="list"></div>
+  </aside>
+  <main id="map" aria-label="英国大学申请地图"></main>
+</div>
+
+<footer>
+  地图底图 © OpenStreetMap contributors。学校坐标为校园中心附近的规划定位点；正式访校或导航请以学校官网地址为准。
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const schools = [
+  {
+    name:"伯明翰大学", en:"University of Birmingham", qs:"=68", city:"Birmingham",
+    lat:52.4508, lng:-1.9305, level:"冲刺",
+    program:"MSc Marketing – Digital Marketing pathway",
+    tuition:"约 £33,660（当前参考）", total:"2028 规划约 ¥49–52万",
+    gain:"品牌战略、消费者洞察、数字营销、真实项目；利于品牌出海和市场岗。",
+    pros:["QS 排名高","商学院认可度强","数字营销方向与跨境电商衔接较好"],
+    cons:["2028 中国院校分组仍需重核","录取不确定性高于核心主申校"]
+  },
+  {
+    name:"利兹大学", en:"University of Leeds", qs:"=77", city:"Leeds",
+    lat:53.8067, lng:-1.5550, level:"主申",
+    program:"MSc International Marketing Management",
+    tuition:"约 £31,500（当前参考）", total:"2028 规划约 ¥47–50万",
+    gain:"国际营销、跨文化消费者心理、数字营销、供应链；适合品牌出海/海外市场。",
+    pros:["江西理工大学目前在商学院认可院校范围内","专业与跨境电商+跨文化背景兼容","QS 与专业平衡好"],
+    cons:["更偏国际营销管理，不是纯电商技术型课程"]
+  },
+  {
+    name:"格拉斯哥大学", en:"University of Glasgow", qs:"80", city:"Glasgow",
+    lat:55.8721, lng:-4.2882, level:"主申",
+    program:"MSc International Business",
+    tuition:"约 £34,470（当前参考）", total:"2028 规划约 ¥51–55万",
+    gain:"国际商业、战略、创业、市场进入和跨国管理；利于从运营转向 BD/国际业务管理。",
+    pros:["QS 较高","职业方向更宽","适合从电商运营升级国际业务"],
+    cons:["课程不如数字营销/电商项目直接","总预算在本池中偏高"]
+  },
+  {
+    name:"谢菲尔德大学", en:"University of Sheffield", qs:"=82", city:"Sheffield",
+    lat:53.3814, lng:-1.4885, level:"主申",
+    program:"MSc Digital Marketing",
+    tuition:"约 £30,625（当前参考）", total:"2028 规划约 ¥45–48万",
+    gain:"E-commerce strategy、社媒、Influencer、Campaign、AI 营销工具和 Analytics。",
+    pros:["当前江西理工大学 2:1 换算线约 75%，80.7 有余量","专业与跨境电商工作经历高度匹配","费用相对友好"],
+    cons:["专业较专；若未来完全转战略/综合管理，广度不如 International Business"]
+  },
+  {
+    name:"南安普顿大学", en:"University of Southampton", qs:"=111", city:"Southampton",
+    lat:50.9346, lng:-1.3957, level:"主申",
+    program:"MSc Digital Business",
+    tuition:"约 £32,500（当前参考）", total:"2028 规划约 ¥50–53万",
+    gain:"数字商业模式、数字战略、创业、产品/项目与数字化转型能力。",
+    pros:["比纯 Digital Marketing 更适合跨专业职业申请人","与跨境电商经历有连续性","可拓宽到 Digital Business/Transformation"],
+    cons:["QS 数字不如前 100 院校","对纯投放/Performance Marketing 不如 Sheffield/Liverpool 直接"]
+  },
+  {
+    name:"埃克塞特大学", en:"University of Exeter", qs:"136", city:"Exeter",
+    lat:50.7371, lng:-3.5351, level:"稳妥",
+    program:"MSc Digital Marketing",
+    tuition:"约 £31,000（当前参考）", total:"2028 规划约 ¥49–53万",
+    gain:"数字营销策略、内容、MarTech、Analytics、消费者行为。",
+    pros:["当前课程对跨专业较友好","相关工作经验价值较高","适合作为稳妥位"],
+    cons:["QS 靠近 150","城市就业市场较小，毕业求职需面向更大城市"]
+  },
+  {
+    name:"利物浦大学", en:"University of Liverpool", qs:"139", city:"Liverpool",
+    lat:53.4062, lng:-2.9653, level:"稳妥",
+    program:"MSc Digital Marketing and Analytics",
+    tuition:"约 £32,000（当前参考）", total:"2028 规划约 ¥45–50万",
+    gain:"Digital Marketing + Social Media + Marketing Analytics；强化数据驱动营销。",
+    pros:["专业和跨境电商非常贴合","兼顾营销与数据","城市规模和生活成本平衡较好"],
+    cons:["QS 2028 需观察是否继续在前 150","排名优势弱于前 100 主申校"]
+  },
+  {
+    name:"纽卡斯尔大学", en:"Newcastle University", qs:"149", city:"Newcastle upon Tyne",
+    lat:54.9783, lng:-1.6178, level:"稳妥",
+    program:"MSc Electronic Commerce",
+    tuition:"约 £30,800（当前参考）", total:"2028 规划约 ¥45–48万",
+    gain:"E-commerce Management、Digital Marketing、Data Analytics、Digital Start-up、Online Selling。",
+    pros:["8所里专业与跨境电商经历最直接匹配","电商+数据+数字营销能力组合完整","费用相对友好"],
+    cons:["QS 149，2028 掉出前150的风险最高","需要在申请季重新确认排名"]
+  }
+];
+
+const map = L.map('map', {scrollWheelZoom:true}).setView([54.2,-2.5], 5.6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+const markers = new Map();
+
+function popupHTML(s){
+  return `<div class="popup">
+    <h3>${s.name}</h3>
+    <p>${s.en} · ${s.city}</p>
+    <p><span class="label">QS 2027：</span>${s.qs}　<span class="label">定位：</span>${s.level}</p>
+    <p><span class="label">推荐专业：</span>${s.program}</p>
+    <p><span class="label">学费：</span>${s.tuition}<br><span class="label">总费用：</span>${s.total}</p>
+    <p><span class="label">毕业后能得到：</span>${s.gain}</p>
+    <p class="label">优势</p><ul>${s.pros.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <p class="label">劣势 / 风险</p><ul>${s.cons.map(x=>`<li>${x}</li>`).join("")}</ul>
+  </div>`;
+}
+
+schools.forEach(s=>{
+  const marker = L.marker([s.lat,s.lng]).addTo(map).bindPopup(popupHTML(s), {maxWidth:340});
+  markers.set(s.name, marker);
+});
+
+function render(filter="全部"){
+  const list = document.getElementById("list");
+  list.innerHTML="";
+  schools.filter(s=>filter==="全部" || s.level===filter).forEach(s=>{
+    const el=document.createElement("div");
+    el.className="school";
+    el.innerHTML=`<div class="top"><div class="name">${s.name}</div><div class="rank">QS ${s.qs}</div></div>
+      <div class="meta">${s.en} · ${s.city}</div>
+      <div class="program">${s.program}</div>
+      <div class="cost">${s.total}</div>
+      <span class="tag">${s.level}</span>`;
+    el.addEventListener("click",()=>{
+      map.setView([s.lat,s.lng],9);
+      markers.get(s.name).openPopup();
+    });
+    list.appendChild(el);
+  });
+}
+render();
+
+document.querySelectorAll("#filters button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("#filters button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    render(btn.dataset.filter);
+  });
+});
+</script>
+</body>
+</html>
