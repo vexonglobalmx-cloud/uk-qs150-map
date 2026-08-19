@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>UK QS150 · 2028</title>
+<style>
+:root{
+  --ink:#111827;
+  --muted:#667085;
+  --line:rgba(15,23,42,.08);
+  --glass:rgba(255,255,255,.86);
+  --glass-strong:rgba(255,255,255,.94);
+  --blue:#2563eb;
+  --shadow:0 14px 40px rgba(15,23,42,.16);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#eef2f6;color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+body{overflow:hidden}
+
+.app{
+  width:min(1180px,calc(100% - 28px));
+  height:calc(100vh - 28px);
+  margin:14px auto;
+  position:relative;
+  border-radius:34px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  background:#dce8f3;
+}
+
+/* map */
+#map{position:absolute;inset:0}
+
+/* top floating chrome */
+.topbar{
+  position:absolute;left:18px;right:18px;top:18px;z-index:1200;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  pointer-events:none;
+}
+.brand{
+  pointer-events:auto;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 8px 24px rgba(15,23,42,.10);
+  border-radius:22px;
+  padding:12px 15px 11px;
+}
+.brand .eyebrow{font-size:11px;font-weight:750;letter-spacing:.12em;color:#64748b;text-transform:uppercase}
+.brand .title{font-size:18px;font-weight:760;letter-spacing:-.02em;margin-top:2px}
+.brand .sub{font-size:12px;color:#667085;margin-top:2px}
+
+.actions{display:flex;gap:8px;pointer-events:auto}
+.iconbtn{
+  border:0;cursor:pointer;
+  width:44px;height:44px;border-radius:16px;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  box-shadow:0 8px 24px rgba(15,23,42,.10);
+  border:1px solid rgba(255,255,255,.7);
+  font-size:18px;color:#111827;
+}
+.iconbtn:hover{background:#fff}
+
+/* filter pills */
+.filters{
+  position:absolute;left:18px;top:104px;z-index:1200;
+  display:flex;gap:7px;
+}
+.filter{
+  border:0;cursor:pointer;
+  padding:8px 12px;border-radius:999px;
+  background:rgba(255,255,255,.78);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+  box-shadow:0 5px 18px rgba(15,23,42,.08);
+  color:#475467;font-size:12px;font-weight:650;
+}
+.filter.active{background:#111827;color:#fff}
+
+/* bottom carousel */
+.rail-wrap{
+  position:absolute;left:0;right:0;bottom:0;z-index:1200;
+  padding:0 16px 16px;
+  pointer-events:none;
+}
+.rail{
+  display:flex;gap:12px;
+  overflow-x:auto;scrollbar-width:none;
+  padding:8px 2px 2px;
+  scroll-snap-type:x proximity;
+  pointer-events:auto;
+}
+.rail::-webkit-scrollbar{display:none}
+.card{
+  flex:0 0 min(360px,82vw);
+  scroll-snap-align:start;
+  background:var(--glass-strong);
+  -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+  border:1px solid rgba(255,255,255,.78);
+  border-radius:24px;
+  box-shadow:0 12px 28px rgba(15,23,42,.13);
+  padding:12px 14px;
+  display:grid;grid-template-columns:64px minmax(0,1fr);
+  gap:12px;align-items:center;
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.card:hover{transform:translateY(-2px)}
+.card.active{
+  background:#fff;
+  box-shadow:0 16px 32px rgba(37,99,235,.18);
+  outline:2px solid rgba(37,99,235,.13);
+}
+.thumb{
+  width:64px;height:64px;border-radius:18px;
+  display:grid;place-items:center;overflow:hidden;
+  position:relative;
+  background:
+    radial-gradient(circle at 30% 25%,rgba(255,255,255,.9),transparent 28%),
+    linear-gradient(145deg,#dce7f7,#edf2f8 55%,#d8e0ec);
+  color:#334155;font-weight:850;font-size:18px;
+}
+.thumb::after{
+  content:"";position:absolute;inset:auto 0 0;height:42%;
+  background:linear-gradient(to top,rgba(30,41,59,.16),transparent);
+}
+.thumb span{position:relative;z-index:1}
+.ctitle{font-size:16px;font-weight:760;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.csub{font-size:12px;color:#667085;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{display:flex;align-items:center;gap:7px;margin-top:7px;flex-wrap:wrap}
+.qs{font-size:12px;font-weight:800}
+.badge{font-size:11px;font-weight:700;padding:4px 7px;border-radius:999px;background:#f2f4f7;color:#344054}
+.program{font-size:12px;color:#344054;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* selected school sheet */
+.sheet{
+  position:absolute;left:50%;bottom:118px;z-index:1250;
+  width:min(620px,calc(100% - 28px));
+  transform:translate(-50%,18px);
+  opacity:0;pointer-events:none;
+  transition:.22s ease;
+  background:rgba(255,255,255,.94);
+  -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.8);
+  border-radius:24px;
+  box-shadow:0 18px 42px rgba(15,23,42,.16);
+  padding:16px 18px;
+}
+.sheet.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.sheet-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.sheet h2{margin:0;font-size:19px;letter-spacing:-.02em}
+.sheet .small{font-size:12px;color:#667085;margin-top:3px}
+.close{
+  width:32px;height:32px;border:0;border-radius:12px;background:#f2f4f7;cursor:pointer;color:#475467;font-size:17px
+}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}
+.item{background:#f8fafc;border-radius:14px;padding:10px 11px}
+.item b{display:block;font-size:11px;color:#667085;margin-bottom:3px}
+.item span{font-size:13px;line-height:1.4;color:#1f2937}
+
+/* leaflet critical */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,
+.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{
+  position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;background:#dbe7f1;outline-offset:1px;-webkit-tap-highlight-color:transparent}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-user-drag:none}
+.leaflet-tile{visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
+.leaflet-zoom-animated{transform-origin:0 0}.leaflet-map-pane{z-index:400}
+.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}
+.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
+.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-control{float:left;clear:both}.leaflet-right .leaflet-control{float:right}
+.leaflet-control-attribution{background:rgba(255,255,255,.68);padding:1px 5px;font-size:9px;color:#64748b}
+.leaflet-control-attribution a{color:#475569;text-decoration:none}
+.leaflet-container .leaflet-tile-pane img{max-width:none!important;max-height:none!important;width:auto!important;padding:0!important}
+.leaflet-div-icon{background:transparent!important;border:0!important;width:auto!important;height:auto!important}
+
+/* custom map labels */
+.pin{
+  display:flex;align-items:center;gap:6px;
+  width:max-content;max-width:180px;
+  transform:translate(-50%,-50%);
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(15,23,42,.10);
+  border-radius:999px;
+  box-shadow:0 5px 14px rgba(15,23,42,.15);
+  padding:6px 9px;
+  cursor:pointer;
+}
+.pin .dot{
+  width:8px;height:8px;border-radius:50%;background:#111827;flex:0 0 auto
+}
+.pin .name{
+  font-size:11px;font-weight:760;color:#111827;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.pin .rank{
+  font-size:10px;color:#667085;font-weight:700;white-space:nowrap
+}
+.pin.active{border-color:#2563eb;box-shadow:0 7px 18px rgba(37,99,235,.24)}
+.pin.active .dot{background:#2563eb}
+
+@media(max-width:760px){
+  .app{width:100%;height:100vh;margin:0;border-radius:0}
+  .topbar{left:12px;right:12px;top:12px}
+  .brand{padding:10px 12px;border-radius:18px}
+  .brand .title{font-size:16px}
+  .brand .sub{display:none}
+  .filters{left:12px;top:86px}
+  .rail-wrap{padding:0 10px 10px}
+  .card{flex-basis:min(330px,86vw);grid-template-columns:58px minmax(0,1fr);padding:10px 11px;border-radius:22px}
+  .thumb{width:58px;height:58px;border-radius:16px}
+  .sheet{bottom:106px}
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div id="map"></div>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="eyebrow">UK QS150</div>
+      <div class="title">2028 申请地图</div>
+      <div class="sub">非伦敦 · 商科 / 数字营销 / 电商</div>
+    </div>
+    <div class="actions">
+      <button class="iconbtn" id="fitBtn" title="查看全部">⌖</button>
+      <button class="iconbtn" id="expandBtn" title="全屏">⛶</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter active" data-filter="全部">全部</button>
+    <button class="filter" data-filter="冲刺">冲刺</button>
+    <button class="filter" data-filter="主申">主申</button>
+    <button class="filter" data-filter="稳妥">稳妥</button>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="sheet-top">
+      <div>
+        <h2 id="sheetTitle"></h2>
+        <div class="small" id="sheetSub"></div>
+      </div>
+      <button class="close" id="closeSheet">×</button>
+    </div>
+    <div class="grid">
+      <div class="item"><b>QS 2027</b><span id="sheetQs"></span></div>
+      <div class="item"><b>申请定位</b><span id="sheetLevel"></span></div>
+      <div class="item"><b>推荐专业</b><span id="sheetProgram"></span></div>
+      <div class="item"><b>2028 费用规划</b><span id="sheetCost"></span></div>
+      <div class="item" style="grid-column:1/-1"><b>毕业后的增量价值</b><span id="sheetGain"></span></div>
+    </div>
+  </div>
+
+  <div class="rail-wrap">
+    <div class="rail" id="rail"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const schools=[
+{name:"伯明翰大学",en:"University of Birmingham",initials:"BHM",qs:"=68",city:"Birmingham",lat:52.4508,lng:-1.9305,level:"冲刺",program:"MSc Marketing – Digital Marketing",cost:"约 ¥49–52万",gain:"学校平台强，补足品牌战略、消费者洞察和数字营销管理能力。"},
+{name:"利兹大学",en:"University of Leeds",initials:"LDS",qs:"=77",city:"Leeds",lat:53.8067,lng:-1.5550,level:"主申",program:"MSc International Marketing Management",cost:"约 ¥47–50万",gain:"把跨境电商执行经验升级成国际市场、品牌与营销战略能力。"},
+{name:"格拉斯哥大学",en:"University of Glasgow",initials:"GLA",qs:"80",city:"Glasgow",lat:55.8721,lng:-4.2882,level:"主申",program:"MSc International Business",cost:"约 ¥51–55万",gain:"从电商运营拓宽到国际业务、BD、市场进入与管理。"},
+{name:"谢菲尔德大学",en:"University of Sheffield",initials:"SHF",qs:"=82",city:"Sheffield",lat:53.3814,lng:-1.4885,level:"主申",program:"MSc Digital Marketing",cost:"约 ¥45–48万",gain:"强化数字营销、社媒、Influencer、E-commerce Strategy、AI 和 Analytics。"},
+{name:"南安普顿大学",en:"University of Southampton",initials:"SOU",qs:"=111",city:"Southampton",lat:50.9346,lng:-1.3957,level:"主申",program:"MSc Digital Business",cost:"约 ¥50–53万",gain:"从电商实操进一步扩展到数字商业、数字战略和数字化转型。"},
+{name:"埃克塞特大学",en:"University of Exeter",initials:"EXE",qs:"136",city:"Exeter",lat:50.7371,lng:-3.5351,level:"稳妥",program:"MSc Digital Marketing",cost:"约 ¥49–53万",gain:"在稳妥录取基础上系统补齐数字营销、MarTech 和消费者分析。"},
+{name:"利物浦大学",en:"University of Liverpool",initials:"LIV",qs:"139",city:"Liverpool",lat:53.4062,lng:-2.9653,level:"稳妥",program:"MSc Digital Marketing and Analytics",cost:"约 ¥45–50万",gain:"把营销和数据分析结合起来，适合海外增长和数据驱动营销。"},
+{name:"纽卡斯尔大学",en:"Newcastle University",initials:"NCL",qs:"149",city:"Newcastle upon Tyne",lat:54.9783,lng:-1.6178,level:"稳妥",program:"MSc Electronic Commerce",cost:"约 ¥45–48万",gain:"专业与跨境电商经历最直接衔接，强化电商管理、数字营销与数据能力。"}
+];
+
+let filter="全部";
+let active=null;
+
+const map=L.map("map",{zoomControl:false,scrollWheelZoom:true,attributionControl:true});
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  maxZoom:19,attribution:"© OpenStreetMap"
+}).addTo(map);
+
+const markerMap=new Map();
+
+function iconFor(s){
+  return L.divIcon({
+    className:"leaflet-div-icon",
+    html:`<div class="pin ${active===s.name?"active":""}">
+      <span class="dot"></span>
+      <span class="name">${s.name}</span>
+      <span class="rank">${s.qs}</span>
+    </div>`,
+    iconSize:[160,34],iconAnchor:[80,17]
+  });
+}
+
+function visibleSchools(){
+  return schools.filter(s=>filter==="全部"||s.level===filter);
+}
+
+function fitVisible(){
+  const vis=visibleSchools();
+  if(!vis.length)return;
+  map.fitBounds(L.latLngBounds(vis.map(s=>[s.lat,s.lng])),{
+    paddingTopLeft:[60,110],
+    paddingBottomRight:[60,150],
+    maxZoom:6.6
+  });
+}
+
+function buildMarkers(){
+  markerMap.forEach(m=>map.removeLayer(m));
+  markerMap.clear();
+  visibleSchools().forEach(s=>{
+    const m=L.marker([s.lat,s.lng],{icon:iconFor(s)}).addTo(map);
+    m.on("click",()=>selectSchool(s.name,true));
+    markerMap.set(s.name,m);
+  });
+}
+
+function cardHTML(s){
+  return `<article class="card ${active===s.name?"active":""}" data-name="${s.name}">
+    <div class="thumb"><span>${s.initials}</span></div>
+    <div>
+      <div class="ctitle">${s.en}</div>
+      <div class="csub">${s.city}</div>
+      <div class="meta">
+        <span class="qs">QS ${s.qs}</span>
+        <span class="badge">${s.level}</span>
+      </div>
+      <div class="program">${s.program}</div>
+    </div>
+  </article>`;
+}
+
+function buildCards(){
+  const rail=document.getElementById("rail");
+  rail.innerHTML=visibleSchools().map(cardHTML).join("");
+  rail.querySelectorAll(".card").forEach(el=>{
+    el.addEventListener("click",()=>selectSchool(el.dataset.name,true));
+  });
+}
+
+function fillSheet(s){
+  document.getElementById("sheetTitle").textContent=s.name;
+  document.getElementById("sheetSub").textContent=`${s.en} · ${s.city}`;
+  document.getElementById("sheetQs").textContent=s.qs;
+  document.getElementById("sheetLevel").textContent=s.level;
+  document.getElementById("sheetProgram").textContent=s.program;
+  document.getElementById("sheetCost").textContent=s.cost;
+  document.getElementById("sheetGain").textContent=s.gain;
+}
+
+function selectSchool(name,move){
+  active=name;
+  const s=schools.find(x=>x.name===name);
+  buildMarkers();
+  buildCards();
+  fillSheet(s);
+  document.getElementById("sheet").classList.add("show");
+  if(move)map.flyTo([s.lat,s.lng],7.6,{duration:.7});
+  setTimeout(()=>{
+    const card=document.querySelector(`.card[data-name="${CSS.escape(name)}"]`);
+    card?.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
+  },80);
+}
+
+document.querySelectorAll(".filter").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    filter=btn.dataset.filter;active=null;
+    document.querySelectorAll(".filter").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("sheet").classList.remove("show");
+    buildMarkers();buildCards();fitVisible();
+  });
+});
+
+document.getElementById("closeSheet").addEventListener("click",()=>{
+  active=null;
+  document.getElementById("sheet").classList.remove("show");
+  buildMarkers();buildCards();
+});
+
+document.getElementById("fitBtn").addEventListener("click",fitVisible);
+
+document.getElementById("expandBtn").addEventListener("click",async()=>{
+  const el=document.getElementById("app");
+  try{
+    if(!document.fullscreenElement) await el.requestFullscreen();
+    else await document.exitFullscreen();
+  }catch(e){}
+  setTimeout(()=>map.invalidateSize(),200);
+});
+
+document.addEventListener("fullscreenchange",()=>setTimeout(()=>map.invalidateSize(),200));
+window.addEventListener("resize",()=>map.invalidateSize());
+
+buildMarkers();
+buildCards();
+fitVisible();
+setTimeout(()=>map.invalidateSize(),200);
+</script>
+</body>
+</html>
