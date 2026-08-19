@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>UK QS150 · 2028 申请地图</title>
+<meta name="description" content="2028 英国 QS150 硕士申请地图：非伦敦院校、推荐专业、申请定位与费用规划。">
+<style>
+:root{
+  --ink:#111827;
+  --muted:#667085;
+  --line:rgba(15,23,42,.08);
+  --glass:rgba(255,255,255,.88);
+  --glass-strong:rgba(255,255,255,.96);
+  --blue:#2563eb;
+  --soft:#f5f7fa;
+  --shadow:0 18px 44px rgba(15,23,42,.16);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#eef2f6;color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+body{overflow:hidden}
+
+.app{
+  width:min(1480px,calc(100% - 24px));
+  height:calc(100vh - 24px);
+  margin:12px auto;
+  border-radius:32px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  background:#dbe8f0;
+  position:relative;
+}
+#map{position:absolute;inset:0}
+
+/* top-left */
+.brand{
+  position:absolute;left:18px;top:18px;z-index:1200;
+  width:270px;
+  padding:15px 17px 14px;
+  border-radius:24px;
+  background:var(--glass);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 8px 24px rgba(15,23,42,.10);
+}
+.brand .eyebrow{font-size:11px;font-weight:800;letter-spacing:.13em;color:#64748b}
+.brand .title{font-size:21px;font-weight:800;letter-spacing:-.03em;margin-top:3px}
+.brand .sub{font-size:12px;color:var(--muted);margin-top:3px}
+
+.filters{
+  position:absolute;left:18px;top:132px;z-index:1200;
+  display:flex;gap:7px;flex-wrap:wrap;
+  max-width:310px;
+}
+.filter{
+  border:0;cursor:pointer;
+  padding:9px 13px;border-radius:999px;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 5px 16px rgba(15,23,42,.08);
+  color:#475467;font-size:12px;font-weight:700;
+}
+.filter.active{background:#111827;color:#fff}
+
+.map-actions{
+  position:absolute;top:18px;right:340px;z-index:1200;
+  display:flex;gap:8px;
+}
+.iconbtn{
+  border:0;cursor:pointer;width:46px;height:46px;border-radius:16px;
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 7px 22px rgba(15,23,42,.10);
+  border:1px solid rgba(255,255,255,.75);
+  font-size:18px;color:#111827
+}
+
+/* right rail */
+.sidebar{
+  position:absolute;right:18px;top:18px;bottom:18px;z-index:1250;
+  width:300px;
+  border-radius:26px;
+  background:rgba(255,255,255,.90);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  border:1px solid rgba(255,255,255,.8);
+  box-shadow:0 14px 34px rgba(15,23,42,.14);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+
+.selected{
+  padding:17px 17px 15px;
+  border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.72);
+}
+.selected.empty{
+  padding:20px 17px;
+}
+.selected .hint-title{font-size:15px;font-weight:800}
+.selected .hint-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+.selected h2{margin:0;font-size:20px;letter-spacing:-.03em}
+.selected .en{font-size:12px;color:var(--muted);margin-top:3px}
+.selected-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;
+}
+.selected-item{
+  background:#f7f9fb;border-radius:14px;padding:9px 10px;
+}
+.selected-item b{display:block;font-size:10px;color:#667085;margin-bottom:3px}
+.selected-item span{font-size:12px;line-height:1.4;color:#1f2937}
+.selected-gain{
+  margin-top:8px;background:#f7f9fb;border-radius:14px;padding:10px;
+}
+.selected-gain b{display:block;font-size:10px;color:#667085;margin-bottom:3px}
+.selected-gain span{font-size:12px;line-height:1.45;color:#1f2937}
+
+.sidebar-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 15px 9px;
+}
+.sidebar-head b{font-size:12px;color:#475467}
+.sidebar-head span{font-size:11px;color:#98a2b3}
+.school-list{
+  overflow:auto;padding:0 10px 12px;
+  scrollbar-width:thin;
+}
+.school-card{
+  display:grid;grid-template-columns:50px minmax(0,1fr);
+  gap:10px;align-items:center;
+  padding:10px;
+  margin:6px 0;
+  border-radius:18px;
+  cursor:pointer;
+  transition:.16s ease;
+  border:1px solid transparent;
+}
+.school-card:hover{background:#f7f9fb}
+.school-card.active{
+  background:#eef4ff;
+  border-color:rgba(37,99,235,.38);
+  box-shadow:0 10px 24px rgba(37,99,235,.16);
+  transform:translateX(-2px);
+}
+.school-card.active .avatar{
+  background:linear-gradient(145deg,#2f6df6,#1d4ed8);
+  color:#fff;
+  box-shadow:0 6px 14px rgba(37,99,235,.24);
+}
+.school-card.active .card-title{color:#1747b8}
+.school-card.active .badge{background:#dce8ff;color:#1747b8}
+.avatar{
+  width:50px;height:50px;border-radius:15px;display:grid;place-items:center;
+  font-size:13px;font-weight:850;color:#334155;
+  background:linear-gradient(145deg,#e9eef6,#d9e2ee);
+}
+.card-title{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-en{font-size:11px;color:#667085;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{display:flex;gap:6px;align-items:center;margin-top:5px}
+.qs{font-size:11px;font-weight:800}
+.badge{font-size:10px;padding:3px 6px;border-radius:999px;background:#eef2f6;color:#344054;font-weight:700}
+
+/* map pins */
+.leaflet-div-icon{background:transparent!important;border:0!important;width:auto!important;height:auto!important}
+.pin{
+  display:flex;align-items:center;gap:6px;
+  width:max-content;max-width:180px;
+  transform:translate(-50%,-50%);
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(15,23,42,.10);
+  border-radius:999px;
+  box-shadow:0 5px 14px rgba(15,23,42,.15);
+  padding:6px 9px;cursor:pointer;
+}
+.pin .dot{width:8px;height:8px;border-radius:50%;background:#111827;flex:0 0 auto}
+.pin .name{font-size:11px;font-weight:800;white-space:nowrap}
+.pin .rank{font-size:10px;color:#667085;font-weight:700}
+.pin.active{
+  background:linear-gradient(135deg,#2f6df6,#1d4ed8);
+  border-color:#1d4ed8;
+  box-shadow:0 10px 26px rgba(37,99,235,.34);
+  transform:translate(-50%,-50%) scale(1.18);
+  padding:7px 11px;
+  z-index:10;
+}
+.pin.active .dot{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.22)}
+.pin.active .name{color:#fff;font-size:12px}
+.pin.active .rank{color:rgba(255,255,255,.84)}
+
+/* Leaflet critical layout CSS */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,
+.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{
+  position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;background:#dbe7f1;outline-offset:1px;-webkit-tap-highlight-color:transparent}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-user-drag:none}
+.leaflet-tile{visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
+.leaflet-zoom-animated{transform-origin:0 0}.leaflet-map-pane{z-index:400}
+.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}
+.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
+.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-control{float:left;clear:both}.leaflet-right .leaflet-control{float:right}
+.leaflet-control-attribution{background:rgba(255,255,255,.72);padding:1px 5px;font-size:9px;color:#64748b}
+.leaflet-control-attribution a{color:#475569;text-decoration:none}
+.leaflet-container .leaflet-tile-pane img{max-width:none!important;max-height:none!important;width:auto!important;padding:0!important}
+
+/* mobile: no overlay list on map */
+.mobile-content{display:none}
+
+@media(max-width:900px){
+  body{overflow:auto}
+  .app{
+    width:100%;height:auto;min-height:100vh;margin:0;border-radius:0;
+    overflow:visible;background:#eef2f6;box-shadow:none;
+  }
+  #map{
+    position:relative;height:62vh;min-height:480px;
+    border-radius:0 0 26px 26px;overflow:hidden;
+  }
+  .sidebar{display:none}
+  .map-actions{right:12px;top:12px}
+  .brand{left:12px;top:12px;width:235px;padding:11px 13px;border-radius:19px}
+  .brand .title{font-size:17px}
+  .brand .sub{display:none}
+  .filters{left:12px;top:92px;max-width:calc(100% - 24px)}
+  .filter{padding:8px 11px}
+  .mobile-content{
+    display:block;padding:16px 12px 26px;background:#eef2f6;
+  }
+  .mobile-selected{
+    background:#fff;border-radius:20px;padding:15px;margin-bottom:12px;
+    box-shadow:0 8px 22px rgba(15,23,42,.07);
+  }
+  .mobile-list{display:grid;gap:8px}
+  .mobile-list .school-card{
+    margin:0;background:#fff;border-radius:18px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div id="map"></div>
+
+  <div class="brand">
+    <div class="eyebrow">UK QS150</div>
+    <div class="title">2028 申请地图</div>
+    <div class="sub">非伦敦 · 商科 / 数字营销 / 电商</div>
+  </div>
+
+  <div class="filters">
+    <button class="filter active" data-filter="全部">全部</button>
+    <button class="filter" data-filter="冲刺">冲刺</button>
+    <button class="filter" data-filter="主申">主申</button>
+    <button class="filter" data-filter="稳妥">稳妥</button>
+  </div>
+
+  <div class="map-actions">
+    <button class="iconbtn" id="fitBtn" title="查看全部">⌖</button>
+    <button class="iconbtn" id="fullscreenBtn" title="全屏">⛶</button>
+  </div>
+
+  <aside class="sidebar">
+    <div class="selected empty" id="selectedPanel">
+      <div class="hint-title">选择一所学校</div>
+      <div class="hint-sub">点击地图上的学校标签，或右侧学校列表。详情会固定显示在这里，不再遮挡地图。</div>
+    </div>
+
+    <div class="sidebar-head">
+      <b>院校列表</b>
+      <span id="countText">8 所</span>
+    </div>
+    <div class="school-list" id="schoolList"></div>
+  </aside>
+
+  <section class="mobile-content">
+    <div class="mobile-selected" id="mobileSelected">
+      <b>选择一所学校</b>
+      <div style="font-size:12px;color:#667085;margin-top:4px">点击上方地图标签或下面的院校卡片查看详情。</div>
+    </div>
+    <div class="mobile-list" id="mobileList"></div>
+  </section>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const schools=[
+{name:"伯明翰大学",en:"University of Birmingham",initials:"BHM",qs:"=68",city:"Birmingham",lat:52.4508,lng:-1.9305,level:"冲刺",program:"MSc Marketing – Digital Marketing",cost:"约 ¥49–52万",gain:"学校平台强，补足品牌战略、消费者洞察和数字营销管理能力。"},
+{name:"利兹大学",en:"University of Leeds",initials:"LDS",qs:"=77",city:"Leeds",lat:53.8067,lng:-1.5550,level:"主申",program:"MSc International Marketing Management",cost:"约 ¥47–50万",gain:"把跨境电商执行经验升级成国际市场、品牌与营销战略能力。"},
+{name:"格拉斯哥大学",en:"University of Glasgow",initials:"GLA",qs:"80",city:"Glasgow",lat:55.8721,lng:-4.2882,level:"主申",program:"MSc International Business",cost:"约 ¥51–55万",gain:"从电商运营拓宽到国际业务、BD、市场进入与管理。"},
+{name:"谢菲尔德大学",en:"University of Sheffield",initials:"SHF",qs:"=82",city:"Sheffield",lat:53.3814,lng:-1.4885,level:"主申",program:"MSc Digital Marketing",cost:"约 ¥45–48万",gain:"强化数字营销、社媒、Influencer、E-commerce Strategy、AI 和 Analytics。"},
+{name:"南安普顿大学",en:"University of Southampton",initials:"SOU",qs:"=111",city:"Southampton",lat:50.9346,lng:-1.3957,level:"主申",program:"MSc Digital Business",cost:"约 ¥50–53万",gain:"从电商实操进一步扩展到数字商业、数字战略和数字化转型。"},
+{name:"埃克塞特大学",en:"University of Exeter",initials:"EXE",qs:"136",city:"Exeter",lat:50.7371,lng:-3.5351,level:"稳妥",program:"MSc Digital Marketing",cost:"约 ¥49–53万",gain:"在稳妥录取基础上系统补齐数字营销、MarTech 和消费者分析。"},
+{name:"利物浦大学",en:"University of Liverpool",initials:"LIV",qs:"139",city:"Liverpool",lat:53.4062,lng:-2.9653,level:"稳妥",program:"MSc Digital Marketing and Analytics",cost:"约 ¥45–50万",gain:"把营销和数据分析结合起来，适合海外增长和数据驱动营销。"},
+{name:"纽卡斯尔大学",en:"Newcastle University",initials:"NCL",qs:"149",city:"Newcastle upon Tyne",lat:54.9783,lng:-1.6178,level:"稳妥",program:"MSc Electronic Commerce",cost:"约 ¥45–48万",gain:"专业与跨境电商经历最直接衔接，强化电商管理、数字营销与数据能力。"}
+];
+
+let currentFilter="全部";
+let activeName=null;
+
+const map=L.map("map",{zoomControl:false,scrollWheelZoom:true,attributionControl:true});
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  maxZoom:19,attribution:"© OpenStreetMap"
+}).addTo(map);
+
+const markerMap=new Map();
+
+function visibleSchools(){
+  return schools.filter(s=>currentFilter==="全部"||s.level===currentFilter);
+}
+
+function pinIcon(s){
+  return L.divIcon({
+    className:"leaflet-div-icon",
+    html:`<div class="pin ${activeName===s.name?"active":""}">
+      <span class="dot"></span>
+      <span class="name">${s.name}</span>
+      <span class="rank">${s.qs}</span>
+    </div>`,
+    iconSize:[160,34],iconAnchor:[80,17]
+  });
+}
+
+function buildMarkers(){
+  markerMap.forEach(m=>map.removeLayer(m));
+  markerMap.clear();
+
+  visibleSchools().forEach(s=>{
+    const m=L.marker([s.lat,s.lng],{
+      icon:pinIcon(s),
+      zIndexOffset: activeName===s.name ? 1000 : 0
+    }).addTo(map);
+    m.on("click",()=>selectSchool(s.name,true));
+    markerMap.set(s.name,m);
+  });
+}
+
+function fitVisible(){
+  const vis=visibleSchools();
+  if(!vis.length)return;
+  const desktop=window.innerWidth>900;
+
+  map.fitBounds(L.latLngBounds(vis.map(s=>[s.lat,s.lng])),{
+    paddingTopLeft:desktop?[70,105]:[30,115],
+    paddingBottomRight:desktop?[355,45]:[30,40],
+    maxZoom:desktop?6.4:6.0
+  });
+}
+
+function cardHTML(s){
+  return `<article class="school-card ${activeName===s.name?"active":""}" data-name="${s.name}">
+    <div class="avatar">${s.initials}</div>
+    <div>
+      <div class="card-title">${s.name}</div>
+      <div class="card-en">${s.en}</div>
+      <div class="card-meta">
+        <span class="qs">QS ${s.qs}</span>
+        <span class="badge">${s.level}</span>
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderLists(){
+  const vis=visibleSchools();
+  document.getElementById("countText").textContent=`${vis.length} 所`;
+
+  const list=document.getElementById("schoolList");
+  const mobile=document.getElementById("mobileList");
+  list.innerHTML=vis.map(cardHTML).join("");
+  mobile.innerHTML=vis.map(cardHTML).join("");
+
+  document.querySelectorAll(".school-card").forEach(card=>{
+    card.addEventListener("click",()=>selectSchool(card.dataset.name,true));
+  });
+}
+
+function detailHTML(s){
+  return `
+    <h2>${s.name}</h2>
+    <div class="en">${s.en} · ${s.city}</div>
+    <div class="selected-grid">
+      <div class="selected-item"><b>QS 2027</b><span>${s.qs}</span></div>
+      <div class="selected-item"><b>申请定位</b><span>${s.level}</span></div>
+      <div class="selected-item" style="grid-column:1/-1"><b>推荐专业</b><span>${s.program}</span></div>
+      <div class="selected-item" style="grid-column:1/-1"><b>2028 费用规划</b><span>${s.cost}</span></div>
+    </div>
+    <div class="selected-gain"><b>毕业后的增量价值</b><span>${s.gain}</span></div>
+  `;
+}
+
+function selectSchool(name,move){
+  activeName=name;
+  const s=schools.find(x=>x.name===name);
+  if(!s)return;
+
+  buildMarkers();
+  renderLists();
+
+  const panel=document.getElementById("selectedPanel");
+  panel.className="selected";
+  panel.innerHTML=detailHTML(s);
+
+  const mobile=document.getElementById("mobileSelected");
+  mobile.innerHTML=detailHTML(s);
+
+  if(move){
+    const desktop=window.innerWidth>900;
+    const targetZoom=desktop?8.0:7.6;
+    map.flyTo([s.lat,s.lng],targetZoom,{duration:.72});
+  }
+}
+
+document.querySelectorAll(".filter").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    currentFilter=btn.dataset.filter;
+    activeName=null;
+    document.querySelectorAll(".filter").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+
+    document.getElementById("selectedPanel").className="selected empty";
+    document.getElementById("selectedPanel").innerHTML=
+      `<div class="hint-title">选择一所学校</div>
+       <div class="hint-sub">点击地图上的学校标签，或右侧学校列表。详情会固定显示在这里，不再遮挡地图。</div>`;
+
+    document.getElementById("mobileSelected").innerHTML=
+      `<b>选择一所学校</b><div style="font-size:12px;color:#667085;margin-top:4px">点击上方地图标签或下面的院校卡片查看详情。</div>`;
+
+    buildMarkers();
+    renderLists();
+    fitVisible();
+  });
+});
+
+document.getElementById("fitBtn").addEventListener("click",fitVisible);
+
+document.getElementById("fullscreenBtn").addEventListener("click",async()=>{
+  const el=document.getElementById("app");
+  try{
+    if(!document.fullscreenElement)await el.requestFullscreen();
+    else await document.exitFullscreen();
+  }catch(e){}
+  setTimeout(()=>{map.invalidateSize();fitVisible()},220);
+});
+
+document.addEventListener("fullscreenchange",()=>setTimeout(()=>{map.invalidateSize();fitVisible()},220));
+window.addEventListener("resize",()=>setTimeout(()=>{map.invalidateSize();fitVisible()},120));
+
+buildMarkers();
+renderLists();
+fitVisible();
+setTimeout(()=>map.invalidateSize(),180);
+</script>
+</body>
+</html>
